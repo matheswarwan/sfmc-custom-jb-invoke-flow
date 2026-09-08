@@ -1,0 +1,24 @@
+{
+  "name": "journey-action-hub",
+  "private": true,
+  "version": "0.2.0",
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "npm run build -w @jah/shared && npm run build -w @jah/api && npm run build -w @jah/web",
+    "test": "tsx --test tests/*.test.ts",
+    "dev": "npm run dev -w @jah/web",
+    "start": "npm run start -w @jah/api"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "tsx": "^4.20.0",
+    "@types/node": "^22.0.0"
+  }
+}

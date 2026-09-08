@@ -1,0 +1,56 @@
+{
+  "workflowApiVersion": "1.1",
+  "type": "Rest",
+  "metaData": {
+    "category": "custom",
+    "isConfigured": false,
+    "configOnDrop": true
+  },
+  "lang": {
+    "en-US": {
+      "name": "Journey Action Hub",
+      "description": "Map Journey Entry data to Salesforce Flow inputs"
+    }
+  },
+  "arguments": {
+    "execute": {
+      "inArguments": [],
+      "outArguments": [],
+      "url": "https://YOUR_API_HOST/activity/execute",
+      "timeout": 20000,
+      "retryCount": 0
+    }
+  },
+  "configurationArguments": {
+    "applicationExtensionKey": "YOUR_INSTALLED_PACKAGE_EXTENSION_KEY",
+    "save": {
+      "url": "https://YOUR_API_HOST/activity/save"
+    },
+    "publish": {
+      "url": "https://YOUR_API_HOST/activity/publish"
+    },
+    "validate": {
+      "url": "https://YOUR_API_HOST/activity/validate"
+    },
+    "stop": {
+      "url": "https://YOUR_API_HOST/activity/stop"
+    },
+    "unpublish": {
+      "url": "https://YOUR_API_HOST/activity/unpublish"
+    }
+  },
+  "userInterfaces": {
+    "configModal": {
+      "url": "index.html",
+      "height": 740,
+      "width": 960
+    }
+  },
+  "wizardSteps": [
+    {
+      "key": "mapping",
+      "label": "Configure Flow",
+      "active": true
+    }
+  ]
+}

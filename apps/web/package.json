@@ -1,0 +1,21 @@
+{
+  "name": "@jah/web",
+  "version": "0.2.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc --noEmit && vite build",
+    "dev": "vite --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@jah/shared": "0.2.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "postmonger": "0.0.16"
+  },
+  "devDependencies": {
+    "vite": "^7.0.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0"
+  }
+}
