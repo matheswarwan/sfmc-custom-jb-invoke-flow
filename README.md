@@ -53,3 +53,5 @@ Use the included Worker adapter to host the UI and Phase 2 API stubs together. S
 ## UI design system
 
 The configuration UI uses the official `@salesforce-ux/design-system` stylesheet with SLDS page headers, cards, form elements, native selects, badges, alerts and buttons. React owns the interactions; custom CSS is limited to layout. SLDS assets are bundled locally so the Journey Builder iframe does not depend on a third-party CDN.
+
+Live demo: [https://sfmc-custom-jb-invoke-flow.mathes-btech.workers.dev/?demo=1](https://sfmc-custom-jb-invoke-flow.mathes-btech.workers.dev/?demo=1). Hosting is live; SFMC package configuration and actual Flow execution remain pending.
