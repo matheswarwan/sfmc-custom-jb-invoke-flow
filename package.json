@@ -11,14 +11,17 @@
     "node": ">=22"
   },
   "scripts": {
-    "build": "npm run build -w @jah/shared && npm run build -w @jah/api && npm run build -w @jah/web",
+    "build": "npm run build -w @jah/shared && npm run build -w @jah/api && npm run build -w @jah/web && tsc -p deployment/cloudflare/tsconfig.json",
     "test": "tsx --test tests/*.test.ts",
     "dev": "npm run dev -w @jah/web",
-    "start": "npm run start -w @jah/api"
+    "start": "npm run start -w @jah/api",
+    "deploy": "npm run build && wrangler deploy",
+    "deploy:check": "npm run build && wrangler deploy --dry-run"
   },
   "devDependencies": {
-    "typescript": "^5.9.3",
+    "@types/node": "^22.0.0",
     "tsx": "^4.20.0",
-    "@types/node": "^22.0.0"
+    "typescript": "^5.9.3",
+    "wrangler": "^4.129.1"
   }
 }

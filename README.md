@@ -45,3 +45,7 @@ Field schemas are not guaranteed in Postmonger's Entry Event response. No field 
 No Salesforce OAuth, live Flow discovery, credential storage, Flow invocation, REST execution, JWT verification, or production activation is implemented. Mock sf-prod is an identifier, not an authenticated connection. Runtime routing metadata transport must be finalized when adding real executors; app metadata is not assumed to arrive in the execute request.
 
 See [architecture](docs/architecture.md), [official API evidence](docs/salesforce-reference.md), and [PROJECT STATE](PROJECT_STATE.md).
+
+## Cloudflare
+
+Use the included Worker adapter to host the UI and Phase 2 API stubs together. See [Cloudflare deployment](docs/cloudflare.md). Run `npm run deploy` after authenticating Cloudflare; an SFMC package extension key is still required for Journey Builder setup.

@@ -25,7 +25,7 @@ Reconstructed the Phase 1 monorepo described in the referenced conversation beca
 - Shared package TypeScript build: passed.
 - API TypeScript build: passed.
 - Web TypeScript and Vite production build: passed.
-- Automated suite: 20 tests passed, 0 failed.
+- Automated suite: 23 tests passed, 0 failed.
 - Browser demo: rendered correctly; required fields block Done; text-to-number mapping rejected; decimal mapping enables Done; save and reload restore mappings.
 - Dependency installation audit: reported 0 vulnerabilities at install time.
 - No live SFMC tenant, JWT, Salesforce OAuth, or Flow execution test performed. Docker build not run.
@@ -41,3 +41,7 @@ Implement Salesforce OAuth, secure connection storage, live Flow/input discovery
 ## Package
 
 The adjacent journey-action-hub-phase-2.zip includes source, lockfile, docs, tests and compiled builds. Dependencies and secrets are excluded. Install with npm ci; build with npm run build; test with npm test. No deployment was performed. The Phase 2 source is maintained at https://github.com/matheswarwan/sfmc-custom-jb-invoke-flow on main; generated builds remain in the downloadable package and are excluded from Git.
+
+## Cloudflare hosting preparation
+
+Worker adapter, deployment configuration, deployed-origin config.json URLs, health check and deployment documentation added. All builds, 23 tests and Wrangler deployment dry-run pass. Actual deployment is pending Cloudflare sign-in; no hosted URL has been created yet.
