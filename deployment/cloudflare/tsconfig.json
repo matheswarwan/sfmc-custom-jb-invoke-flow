@@ -1,1 +1,15 @@
-{"extends":"../../tsconfig.base.json","compilerOptions":{"module":"ESNext","moduleResolution":"Bundler","resolveJsonModule":true,"lib":["ES2022","DOM"],"noEmit":true},"include":["worker.ts"]}
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "lib": [
+      "ES2022"
+    ],
+    "noEmit": true
+  },
+  "include": [
+    "**/*.ts"
+  ]
+}

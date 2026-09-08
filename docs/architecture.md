@@ -26,3 +26,7 @@ Discovery inspects only schema-bearing locations: root `schema`, root `fields`/`
 The known mock schema owns five input keys. Saving preserves foreign argument keys even when they share an object with an owned key. Explicit saved mappings take precedence over inferred legacy arguments. Unknown Flow/connection/executor/version configurations are displayed and blocked from saving, avoiding a silent conversion to the mock catalog.
 
 No credentials or contact values are logged or persisted by the real UI. Only the explicit top-level local demo uses localStorage. The API is a disabled execution skeleton: save/stop/unpublish acknowledge requests; validate/publish reject activation; execute returns 501. Authentication and durable runtime configuration are future work.
+
+## Phase 3 backend
+
+The Cloudflare entry module also exports a SQLite Durable Object for the sf-prod connection. Its connection service serializes administrator token operations and stores credentials encrypted with a Cloudflare Secret. The separate /connections page uses its own authenticated session and opens outside the Journey Builder iframe. See phase-3-oauth.md for the trust boundary, cookie/CSRF controls and key management. The Express process remains a Phase 1/2 scaffold; it does not implement the new OAuth routes.

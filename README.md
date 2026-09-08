@@ -1,4 +1,4 @@
-# Journey Action Hub — Phase 2
+# Journey Action Hub — Phase 3
 
 A React/TypeScript configuration application for an SFMC Journey Builder REST custom activity. It maps Entry Event fields to a mock Salesforce Flow schema using the real Postmonger package.
 
@@ -42,7 +42,7 @@ Use a draft Journey for configuration verification. See [acceptance checks](docs
 
 Field schemas are not guaranteed in Postmonger's Entry Event response. No field data is fabricated in real mode and no tokens are requested. Missing DE metadata requires future authenticated metadata lookup. Names with unsupported punctuation/spaces are excluded rather than emitting guessed bindings. Nested object bindings are generated for supported descriptors but need validation against the actual Entry Source. Type handling is conservative: unknown numeric types are rejected; no automatic coercion is performed.
 
-No Salesforce OAuth, live Flow discovery, credential storage, Flow invocation, REST execution, JWT verification, or production activation is implemented. Mock sf-prod is an identifier, not an authenticated connection. Runtime routing metadata transport must be finalized when adding real executors; app metadata is not assumed to arrive in the execute request.
+Phase 3 adds Salesforce OAuth and encrypted credential storage through the separate administrator connection page. Live Flow discovery, Flow invocation, REST execution, JWT verification, and production activation are not implemented. The mapper still uses a mock catalog; connection authorization is managed separately. Runtime routing metadata transport must be finalized when adding real executors; app metadata is not assumed to arrive in the execute request.
 
 See [architecture](docs/architecture.md), [official API evidence](docs/salesforce-reference.md), and [PROJECT STATE](PROJECT_STATE.md).
 
@@ -55,3 +55,7 @@ Use the included Worker adapter to host the UI and Phase 2 API stubs together. S
 The configuration UI uses the official `@salesforce-ux/design-system` stylesheet with SLDS page headers, cards, form elements, native selects, badges, alerts and buttons. React owns the interactions; custom CSS is limited to layout. SLDS assets are bundled locally so the Journey Builder iframe does not depend on a third-party CDN.
 
 Live demo: [https://sfmc-custom-jb-invoke-flow.mathes-btech.workers.dev/?demo=1](https://sfmc-custom-jb-invoke-flow.mathes-btech.workers.dev/?demo=1). Hosting is live; SFMC package configuration and actual Flow execution remain pending.
+
+## Salesforce OAuth (Phase 3)
+
+Open [/connections](https://sfmc-custom-jb-invoke-flow.mathes-btech.workers.dev/connections) to configure and authorize a Salesforce External Client App. See the [Phase 3 setup and security guide](docs/phase-3-oauth.md) for callback URL, scopes, encrypted storage, administrator sign-in, and verification limits.

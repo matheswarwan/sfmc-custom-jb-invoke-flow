@@ -1,5 +1,7 @@
 # Cloudflare deployment
 
+Phase 3 adds encrypted Salesforce connection storage and administrator APIs. See [OAuth setup](phase-3-oauth.md) for bootstrap secrets and Salesforce configuration.
+
 Cloudflare Workers hosts both the built React assets and a lightweight adapter for the Phase 2 lifecycle/API stubs. No separate Express hosting is needed. The existing Express app remains available for local development.
 
 ```sh
