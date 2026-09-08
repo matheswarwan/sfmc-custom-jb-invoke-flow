@@ -6,7 +6,6 @@ import { ActivitySession, type State } from './session';
 import { DemoTransport } from './demo';
 import '@salesforce-ux/design-system/assets/styles/salesforce-lightning-design-system.css';
 import './styles.css';
-import { Connections } from './Connections';
 const demo = window.self === window.top && new URLSearchParams(location.search).get('demo') === '1';
 function CatalogField({ label, value }: { label: string; value: string }) {
   const id = `catalog-${label.replaceAll(' ', '-').toLowerCase()}`;
@@ -37,7 +36,7 @@ function App() {
       </div><div className="slds-page-header__col-actions"><span className="slds-badge">Phase 3</span></div></div>
     </header>
     {demo && <aside className="slds-notify slds-notify_alert slds-theme_warning slds-m-top_medium jah-notice">Local demo · Journey fields are synthetic. Done saves in this browser; reload to test reopening.</aside>}
-    <p className="slds-m-top_medium"><a href="/connections" target="_blank" rel="noopener noreferrer">Manage Salesforce connection</a> · Flow inputs are still mocked.</p>
+    <p className="slds-m-top_medium">Salesforce authentication is configured on the server. Flow inputs are still mocked.</p>
     <section className="slds-m-vertical_large">
       <h2 className="slds-text-heading_small">Connect each input to Journey data</h2>
       <p className="slds-text-body_regular slds-m-top_x-small">Choose the values your Flow will receive when a contact reaches this activity.</p>
@@ -94,4 +93,4 @@ function App() {
     {!demo && !state.initialized && window.self === window.top && <a className="slds-m-top_small slds-show" href="?demo=1">Open local demo</a>}
   </main>;
 }
-createRoot(document.getElementById('root')!).render(location.pathname === "/connections" ? <Connections /> : <App />);
+createRoot(document.getElementById('root')!).render(<App />);

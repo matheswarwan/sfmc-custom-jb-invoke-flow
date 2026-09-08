@@ -1,0 +1,4 @@
+# Copy to .dev.vars only for local Cloudflare development. Never commit real values.
+SF_CLIENT_ID=
+SF_CLIENT_SECRET=
+SF_LOGIN_URL=https://your-org.my.salesforce.com

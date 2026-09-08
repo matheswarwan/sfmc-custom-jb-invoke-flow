@@ -1,49 +1,33 @@
-# PROJECT STATE — Phase 3
+# PROJECT STATE — Phase 3: OAuth client credentials
 
-Project: Journey Action Hub
+The application now uses backend-only OAuth client credentials. The admin UI, administrator login, authorization-code/PKCE handlers, callbacks, and refresh-token service have been removed at the user's request.
 
-Status: Salesforce OAuth and connection management implemented and deployed. Live Salesforce org authorization remains pending user setup.
+## Configuration
 
-## Live URLs
+Cloudflare Worker Secrets: `SF_CLIENT_ID`, `SF_CLIENT_SECRET`.
 
-- Connection management: https://sfmc-custom-jb-invoke-flow.mathes-btech.workers.dev/connections
-- Mapper demo: https://sfmc-custom-jb-invoke-flow.mathes-btech.workers.dev/?demo=1
-- SFMC activity configuration: https://sfmc-custom-jb-invoke-flow.mathes-btech.workers.dev/config.json
+Cloudflare text environment variable: `SF_LOGIN_URL` (Salesforce HTTPS My Domain origin).
 
-Cloudflare deployment version: c28465ff-b8af-4a79-95e2-9bf4c101c6ba (2026-09-08).
+Enable Client Credentials Flow in the Salesforce app and configure its integration / Run As user. No interactive login, consent button or callback is used by this app. See docs/phase-3-oauth.md.
 
-## Implemented in Phase 3
+## Implementation
 
-- Separate SLDS administrator page with login, External Client App settings, connect, test, refresh, disconnect and logout.
-- Salesforce authorization code flow with S256 PKCE, one-time state, browser-session binding, callback expiry and fixed callback URL.
-- One deployment-scoped Salesforce connection (`sf-prod`), stored in a SQLite-backed Durable Object.
-- AES-256-GCM encryption for client settings, access/refresh tokens and pending OAuth state; encryption key in Cloudflare Secrets.
-- Administrator key in Cloudflare Secrets; opaque server-side sessions with Secure/HttpOnly/SameSite cookies, CSRF/origin validation and login attempt limiting.
-- Supported Salesforce HTTPS endpoint validation, bounded requests, redacted errors, token rotation serialization, connection verification, and remote revocation before local deletion.
-- Generated Cloudflare binding/runtime types and documented deployment migration.
+- Internal Salesforce client exchanges credentials for an access token using grant_type=client_credentials.
+- Tokens are cached in connection-instance memory for up to five minutes; concurrent requests share acquisition.
+- A Salesforce 401 causes one new token exchange and one retry. No refresh token is used.
+- No public token endpoint or general Salesforce proxy is exposed.
+- `/connections`, `/api/admin/*`, and `/oauth/*` return HTTP 410 and clear the old admin cookie.
+- Previous encrypted Durable Object records remain dormant and are never read; old credentials are not automatically migrated into environment variables.
+- Deployments preserve dashboard variables with --keep-vars.
 
 ## Verification
 
-- Shared/API/web/Cloudflare TypeScript builds: passed.
-- Automated tests: 38 passed, 0 failed.
-- Cloudflare deployment dry-run: passed.
-- Local Cloudflare runtime: real Durable Object RPC and SQL storage verified for login, settings, OAuth URL creation and logout.
-- Live deployment: protected status, administrator login, cookie attributes, authenticated status, logout, management-page headers and phase-3 health verified.
-- Browser: live SLDS administrator sign-in page rendered correctly.
-- Real Salesforce consent/code exchange, refresh and revoke: not yet run. Tests use mocked Salesforce responses.
+All TypeScript builds and 32 tests passed. Tests cover token exchange, caching, concurrent acquisition, expiration, 401 retry bounds, redacted errors, endpoint restrictions and retired routes, along with the existing Postmonger mapper tests.
 
-## What you need to do
+Actual Salesforce authentication remains pending environment setup and Salesforce app policy verification. Presence of settings in /health is not an authentication test. The Flow catalog is still mocked, and real Flow discovery/execution remains the next phase. Runtime and activation are still disabled.
 
-Open the connection-management page and sign in using the separately delivered private administrator access file. Enter your Salesforce External Client App consumer key, secret and login endpoint, then authorize Salesforce. Callback and scope instructions are in docs/phase-3-oauth.md and on the page. No Salesforce credentials are currently configured.
+Live demo: https://sfmc-custom-jb-invoke-flow.mathes-btech.workers.dev/?demo=1
 
-The SFMC application extension key remains unset. The mapper continues to use the Phase 2 mock Flow catalog. Actual Flow discovery, dynamic input metadata and execution are not implemented. Runtime and activation remain deliberately disabled.
+Repository: https://github.com/matheswarwan/sfmc-custom-jb-invoke-flow
 
-## Next phase
-
-Discover eligible active API-invocable autolaunched Flows through the authorized backend, fetch real input-variable metadata, and replace the mock catalog. Keep credentials server-side and define authenticated Journey Builder access to this metadata before exposing it to the iframe. Then implement authenticated runtime execution, lifecycle validation and tenant end-to-end acceptance.
-
-## Provenance
-
-Phase 1 was reconstructed from the referenced ChatGPT conversation because its original source artifact was unavailable. Phase 2 implemented and verified the Postmonger mapper. The source is maintained at https://github.com/matheswarwan/sfmc-custom-jb-invoke-flow on main.
-
-The Phase 3 ZIP includes source, tests, lockfile, documentation and compiled assets. It excludes Git history, installed dependencies, Cloudflare local state and all private keys. The private administrator access file is delivered separately and must not be committed or shared publicly.
+The updated client-credentials ZIP supersedes earlier Phase 3 artifacts and the old administrator access file. No private keys are included.

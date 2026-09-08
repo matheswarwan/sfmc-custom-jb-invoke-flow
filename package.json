@@ -15,7 +15,7 @@
     "test": "tsx --test tests/*.test.ts",
     "dev": "npm run dev -w @jah/web",
     "start": "npm run start -w @jah/api",
-    "deploy": "npm run build && wrangler deploy",
+    "deploy": "npm run build && wrangler deploy --keep-vars",
     "deploy:check": "npm run build && wrangler deploy --dry-run"
   },
   "devDependencies": {

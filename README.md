@@ -42,7 +42,7 @@ Use a draft Journey for configuration verification. See [acceptance checks](docs
 
 Field schemas are not guaranteed in Postmonger's Entry Event response. No field data is fabricated in real mode and no tokens are requested. Missing DE metadata requires future authenticated metadata lookup. Names with unsupported punctuation/spaces are excluded rather than emitting guessed bindings. Nested object bindings are generated for supported descriptors but need validation against the actual Entry Source. Type handling is conservative: unknown numeric types are rejected; no automatic coercion is performed.
 
-Phase 3 adds Salesforce OAuth and encrypted credential storage through the separate administrator connection page. Live Flow discovery, Flow invocation, REST execution, JWT verification, and production activation are not implemented. The mapper still uses a mock catalog; connection authorization is managed separately. Runtime routing metadata transport must be finalized when adding real executors; app metadata is not assumed to arrive in the execute request.
+Phase 3 adds Salesforce OAuth and environment-based credentials through server-side client credentials. Live Flow discovery, Flow invocation, REST execution, JWT verification, and production activation are not implemented. The mapper still uses a mock catalog; connection authorization is managed separately. Runtime routing metadata transport must be finalized when adding real executors; app metadata is not assumed to arrive in the execute request.
 
 See [architecture](docs/architecture.md), [official API evidence](docs/salesforce-reference.md), and [PROJECT STATE](PROJECT_STATE.md).
 
@@ -58,4 +58,4 @@ Live demo: [https://sfmc-custom-jb-invoke-flow.mathes-btech.workers.dev/?demo=1]
 
 ## Salesforce OAuth (Phase 3)
 
-Open [/connections](https://sfmc-custom-jb-invoke-flow.mathes-btech.workers.dev/connections) to configure and authorize a Salesforce External Client App. See the [Phase 3 setup and security guide](docs/phase-3-oauth.md) for callback URL, scopes, encrypted storage, administrator sign-in, and verification limits.
+Uses server-to-server OAuth client credentials. Configure Cloudflare Secrets `SF_CLIENT_ID` and `SF_CLIENT_SECRET`, plus the `SF_LOGIN_URL` text variable. No admin page or interactive authorization is required. See [setup instructions](docs/phase-3-oauth.md). Flow discovery and execution remain pending.

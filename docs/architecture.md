@@ -29,4 +29,4 @@ No credentials or contact values are logged or persisted by the real UI. Only th
 
 ## Phase 3 backend
 
-The Cloudflare entry module also exports a SQLite Durable Object for the sf-prod connection. Its connection service serializes administrator token operations and stores credentials encrypted with a Cloudflare Secret. The separate /connections page uses its own authenticated session and opens outside the Journey Builder iframe. See phase-3-oauth.md for the trust boundary, cookie/CSRF controls and key management. The Express process remains a Phase 1/2 scaffold; it does not implement the new OAuth routes.
+The Cloudflare connection object uses environment-supplied OAuth client credentials and a short-lived in-memory access-token cache. It has no administrator UI or interactive callback. Old encrypted storage is dormant and never read by the new implementation. The internal request helper acquires a new token after a 401 and retries once; no token/proxy endpoint is exposed publicly. See phase-3-oauth.md.

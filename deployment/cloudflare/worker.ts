@@ -1,16 +1,11 @@
+import type { SalesforceEnvironment } from './client-credentials';
 type ActivityTemplate = typeof import('../../jb-activity/config.json');
-type WorkerBindings = Pick<Env, "ASSETS"> & Partial<Pick<Env,"CONNECTIONS">> & { APPLICATION_EXTENSION_KEY?: string };
+type WorkerBindings = Pick<Env, "ASSETS"> & Partial<Pick<Env,"CONNECTIONS">> & { APPLICATION_EXTENSION_KEY?: string } & SalesforceEnvironment;
 export default {
   async fetch(request: Request, env: WorkerBindings): Promise<Response> {
     const url = new URL(request.url);
-    if (url.pathname.startsWith('/api/admin/') || url.pathname.startsWith('/oauth/')) {
-      if (!env.CONNECTIONS) return Response.json({error:'Connection storage is not configured.'},{status:503});
-      return env.CONNECTIONS.getByName('sf-prod').handle(request);
-    }
-    if (url.pathname === '/connections') {
-      const response = await env.ASSETS.fetch(new Request(new URL('/index.html',url)));
-      const headers = new Headers(response.headers); headers.set('cache-control','no-store'); headers.set('x-frame-options','DENY'); headers.set('content-security-policy',"default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; object-src 'none'; form-action 'self'"); headers.set('referrer-policy','no-referrer');
-      return new Response(response.body,{status:response.status,headers});
+    if (url.pathname === '/connections' || url.pathname.startsWith('/api/admin/') || url.pathname.startsWith('/oauth/')) {
+      return new Response('Interactive authorization has been removed. Salesforce uses server-side client credentials.', {status:410,headers:{'cache-control':'no-store','content-type':'text/plain','set-cookie':'__Host-jah-admin=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0'}});
     }
     if (url.pathname === '/config.json') {
       if (!['GET','HEAD'].includes(request.method)) return new Response('Method not allowed', {status:405});
@@ -22,7 +17,7 @@ export default {
       config.configurationArguments.applicationExtensionKey = env.APPLICATION_EXTENSION_KEY || config.configurationArguments.applicationExtensionKey;
       return new Response(request.method === 'HEAD' ? null : JSON.stringify(config), {headers:{'content-type':'application/json','cache-control':'no-store'}});
     }
-    if (url.pathname === '/health') return Response.json({status:'ok',phase:3,runtimeEnabled:false,packageConfigured:!!env.APPLICATION_EXTENSION_KEY});
+    if (url.pathname === '/health') return Response.json({status:'ok',phase:3,runtimeEnabled:false,packageConfigured:!!env.APPLICATION_EXTENSION_KEY,salesforceConfigured:!!(env.SF_CLIENT_ID && env.SF_CLIENT_SECRET && env.SF_LOGIN_URL),authMethod:'client_credentials'});
     if (url.pathname.startsWith('/activity/')) {
       if (request.method !== 'POST') return new Response('Method not allowed',{status:405,headers:{Allow:'POST'}});
       const action = url.pathname.slice('/activity/'.length);

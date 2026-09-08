@@ -1,69 +1,41 @@
-# Phase 3 — Salesforce OAuth and connection management
+# Phase 3 — OAuth client credentials
 
-Phase 3 adds one administrator-managed Salesforce org connection (`sf-prod`) per deployment. It does not discover or invoke real Flows yet. The Journey Builder mapper still uses the Phase 2 mock input catalog and does not infer authorization from an activity's saved connection ID.
+Salesforce authentication is server-to-server. There is no administrator UI, access key, Authorize button, callback or refresh-token flow.
 
-## Set up Salesforce
+## Cloudflare configuration
 
-Create an External Client App (or use an existing supported Connected App) in the target org. Configure:
+In the Worker Settings → Variables and Secrets, configure:
 
-- OAuth web server / authorization code flow with PKCE (S256).
-- Callback URL: `https://sfmc-custom-jb-invoke-flow.mathes-btech.workers.dev/oauth/callback`.
-- OAuth scopes: `api`, `refresh_token` (offline access), and `id` (identity).
-- Require client secret for web server and refresh token flows.
-- Give the authorizing integration user the appropriate org access and app policy permission. An API-enabled org/user is required. This phase verifies identity; later phases will verify permissions to discover and execute Flows.
+| Name | Type | Value |
+| --- | --- | --- |
+| SF_CLIENT_ID | Secret | Salesforce consumer key / client ID |
+| SF_CLIENT_SECRET | Secret | Salesforce consumer secret |
+| SF_LOGIN_URL | Text variable | Org's HTTPS My Domain origin, e.g. https://your-org.my.salesforce.com |
 
-At `/connections`, sign in with the Journey Action Hub administrator key, enter the consumer key/client ID, consumer secret/client secret, and Salesforce login URL. Choose `https://login.salesforce.com`, `https://test.salesforce.com`, or the org's HTTPS My Domain origin. Save settings, then authorize Salesforce. The actual Salesforce login/consent happens at Salesforce; this app never requests your Salesforce password.
+Use the My Domain origin without a path or trailing token endpoint. The backend appends `/services/oauth2/token`. Configure `SF_LOGIN_URL` in the dashboard or wrangler.jsonc. The deploy script uses `--keep-vars` to preserve dashboard-set variables. Secrets are never placed in source, browser configuration, or Journey arguments.
 
-Use Test connection to check the current access token (automatically refresh on 401), Refresh authorization to test refresh-token exchange, and Disconnect to revoke the refresh token and remove stored tokens. A failed remote revocation preserves local tokens so it can be retried. If Salesforce reports invalid_grant, reconnect is required. Disconnect first, then authorize again.
+For CLI setup, run `npx wrangler secret put SF_CLIENT_ID` and `npx wrangler secret put SF_CLIENT_SECRET`. Enter their values at the secure prompts, not in command arguments.
 
-## Where data is stored
+## Salesforce settings
 
-| Data | Storage |
-| --- | --- |
-| Administrator access key | Cloudflare Worker Secret `ADMIN_ACCESS_KEY` |
-| AES-256-GCM encryption key | Cloudflare Worker Secret `TOKEN_ENCRYPTION_KEY` |
-| Client ID, client secret, login endpoint | Encrypted record in the connection's SQLite Durable Object |
-| Access token, refresh token, instance and identity URLs | Encrypted record in the same Durable Object |
-| Admin sessions | Hashed opaque session IDs and CSRF values with a 30-minute expiry in Durable Object storage |
-| Pending OAuth attempt | Encrypted state hash, PKCE verifier, callback URI, browser session binding and 10-minute expiry |
-| Journey activity | Non-secret `connectionId` and mapping configuration only |
+Enable OAuth Client Credentials Flow on the External Client App or supported existing Connected App. Enable API access scope and configure its integration / Run As user and app policies. Give that user only the permissions required for the eventual Flow integration. No callback or interactive consent is used by this app. No refresh token is issued.
 
-Client secrets and Salesforce tokens are never returned by connection-status APIs, written to browser storage, committed to Git, or logged by application code. The client secret is transiently present in the administrator's password field when entered and is cleared after a successful save. Only the non-secret client ID, URLs, timestamps and connection state appear in authenticated status responses.
+## Backend behavior
 
-The generated administrator key is supplied separately as a private local delivery file, outside the Git repository. Keep it in a password manager. The encryption key is not included in that delivery file; protect the Cloudflare secret and do not rotate it without migrating existing encrypted records. Loss of that key requires clearing the connection records and reauthorizing.
+The internal Salesforce client posts a form containing `grant_type=client_credentials`, `client_id`, and `client_secret` to the token endpoint. It uses the returned instance_url for Salesforce data API requests. Tokens remain in per-connection memory for at most five minutes (shorter if expires_in is supplied). Concurrent requests share acquisition. After a 401, the client acquires a fresh token and retries exactly once. HTTP redirects are rejected; token responses are bounded and network calls time out.
 
-## Backend controls
+There is deliberately no public endpoint that returns tokens or accepts arbitrary Salesforce proxy requests. The internal Durable Object client is ready for the next phase's authenticated Flow discovery service. Flow discovery and actual execution remain unimplemented, so ordinary page views do not acquire tokens.
 
-- Admin and OAuth routes fail closed when bootstrap secrets are absent.
-- Administrator cookie is Secure, HttpOnly, SameSite=Lax, host-only, and expires after 30 minutes. Logout deletes its server-side session.
-- Every POST checks the fixed app Origin. Authenticated mutations also require a CSRF token.
-- Five administrator login attempts per IP per minute, stored server-side.
-- Random one-time OAuth state, bound to the same admin session; code verifier sent only during token exchange. Replayed, wrong-session, expired and mismatched callbacks cannot exchange codes.
-- OAuth callbacks redirect to a fixed local page, dropping the code from navigation. Errors never reflect Salesforce response bodies.
-- Salesforce endpoints accept only supported HTTPS Salesforce login/My Domain origins; no arbitrary proxy targets or redirect following.
-- External requests have 8-second timeouts and response-body limits.
-- Token refresh and disconnect operations are serialized per connection, preserving rotated refresh tokens before further network calls. This is administrator traffic, not the future contact execution path.
-- The management page cannot be framed. It opens separately from Journey Builder, avoiding embedded third-party cookie dependence.
+`/health` reports `authMethod: client_credentials` and whether all three configuration values are present. Presence is not proof of successful Salesforce authentication.
 
-This is a single-administrator-key MVP. It is not multi-tenant authentication or enterprise SSO. A key holder can manage the one deployment connection. Key rotation blocks new login with the previous key; existing sessions expire within 30 minutes. Durable Object records expire logically on access and are physically purged on subsequent writes.
+## Migration from the previous implementation
 
-## Deployment
+The UI, admin API, PKCE and authorization-code code paths have been removed. `/connections`, `/api/admin/*` and `/oauth/*` return 410 and expire the old admin cookie. The existing Durable Object namespace is retained to avoid destroying historical records during migration, but the new class never reads them. Previously stored credentials are not automatically copied to environment variables: set the three values above in Cloudflare.
 
-The Worker binds a SQLite-backed `SalesforceConnection` Durable Object with migration `v1`. `wrangler types` generates runtime and binding definitions. The application origin is fixed in `wrangler.jsonc`; update it and the Salesforce callback together if changing domains.
+Historical encrypted records and their legacy Cloudflare encryption secret remain dormant; the previous administrator key is no longer accepted anywhere. You can revoke the old app authorization in Salesforce independently. Do not use the earlier administrator access file or Phase 3 ZIP: the updated client-credentials package supersedes them.
 
-For a fresh installation, create a 32-byte base64url `TOKEN_ENCRYPTION_KEY` and a high-entropy `ADMIN_ACCESS_KEY`, then set both with Wrangler Secrets. Never put them in `wrangler.jsonc`. Run `npm run deploy:check`, `npm test`, and `npm run deploy`. The Express scaffold is not the OAuth backend; OAuth routes are implemented in the Cloudflare Worker.
+## Verification
 
-## Verification and limits
+Tests cover form parameters, cache/concurrency, token reacquisition, bounded retries, endpoint/path restrictions, error redaction and removal of old routes. Real Salesforce authentication must be verified after environment configuration and Run As user policy are complete.
 
-Automated tests cover encryption, endpoint validation, session authentication, CSRF, OAuth state replay/cross-session rejection, PKCE, denial, token confidentiality, rotation concurrency, invalid grants, and revocation failures. Local Cloudflare runtime tests verify real RPC and SQL persistence for login, settings, authorization URL and logout.
-
-A real Salesforce code exchange, consent, org policy, refresh, and revocation must still be verified using your External Client App. Mocked upstream tests do not establish tenant acceptance. Runtime execution remains disabled; live Flow discovery is the next phase.
-
-## Official references
-
-- [Salesforce OAuth web server flow and PKCE](https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_web_server_flow.htm&language=en_US&type=5)
-- [Salesforce OAuth endpoints](https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_endpoints.htm&language=en_US&type=5)
-- [External Client App setup](https://trailhead.salesforce.com/content/learn/projects/build-integrations-with-external-client-apps/create-and-configure-an-external-client-app)
-- [Token revocation](https://help.salesforce.com/s/articleView?id=sf.remoteaccess_revoke_token.htm&language=en_US&type=5)
-- [Cloudflare SQLite Durable Object storage](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/)
-- [Cloudflare Worker Secrets](https://developers.cloudflare.com/workers/configuration/secrets/)
+[Salesforce client credentials guide](https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_client_credentials_flow.htm&language=en_US&type=5) · [Salesforce integration-user guidance](https://developer.salesforce.com/blogs/2024/02/invoke-rest-apis-with-the-salesforce-integration-user-and-oauth-client-credentials)

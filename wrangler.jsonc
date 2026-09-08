@@ -32,7 +32,5 @@
       ]
     }
   ],
-  "vars": {
-    "APP_ORIGIN": "https://sfmc-custom-jb-invoke-flow.mathes-btech.workers.dev"
-  }
+  "vars": {}
 }
