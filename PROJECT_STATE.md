@@ -45,3 +45,7 @@ The adjacent journey-action-hub-phase-2.zip includes source, lockfile, docs, tes
 ## Cloudflare hosting preparation
 
 Worker adapter, deployment configuration, deployed-origin config.json URLs, health check and deployment documentation added. All builds, 23 tests and Wrangler deployment dry-run pass. Actual deployment is pending Cloudflare sign-in; no hosted URL has been created yet.
+
+## SLDS UI
+
+The configuration interface now uses the official Salesforce Lightning Design System package, with SLDS forms, native selects, page header, cards, alerts, badges and buttons. Custom CSS is limited to layout. Production build and 23 regression tests pass; the SLDS layout was inspected in the browser. Cloudflare deployment is pending the required Worker Scripts OAuth permission.

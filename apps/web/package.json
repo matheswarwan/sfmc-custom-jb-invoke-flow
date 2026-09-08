@@ -8,14 +8,15 @@
   },
   "dependencies": {
     "@jah/shared": "0.2.0",
+    "@salesforce-ux/design-system": "^2.264.1",
+    "postmonger": "0.0.16",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "postmonger": "0.0.16"
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "vite": "^7.0.0",
-    "@vitejs/plugin-react": "^5.0.0",
     "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0"
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "vite": "^7.0.0"
   }
 }

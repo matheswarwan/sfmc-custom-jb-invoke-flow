@@ -49,3 +49,7 @@ See [architecture](docs/architecture.md), [official API evidence](docs/salesforc
 ## Cloudflare
 
 Use the included Worker adapter to host the UI and Phase 2 API stubs together. See [Cloudflare deployment](docs/cloudflare.md). Run `npm run deploy` after authenticating Cloudflare; an SFMC package extension key is still required for Journey Builder setup.
+
+## UI design system
+
+The configuration UI uses the official `@salesforce-ux/design-system` stylesheet with SLDS page headers, cards, form elements, native selects, badges, alerts and buttons. React owns the interactions; custom CSS is limited to layout. SLDS assets are bundled locally so the Journey Builder iframe does not depend on a third-party CDN.
